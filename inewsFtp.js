@@ -21,6 +21,7 @@ function InewsClient(config) {
 	self._lastDirectory = null;
 	self._connectionCallbacks = [];
 	self._connectionInProgress = false;
+	self._currentHost = null;
 
 	self._ftpConn = new FtpClient();
 
@@ -70,8 +71,6 @@ InewsClient.prototype.connect = function(callback, forceDisconnect) {
 		}
 
 		function connect(connectResult) {
-			self._setStatus('connecting');
-
 			var returned = false;
 
 			function onReady() {
@@ -96,8 +95,12 @@ InewsClient.prototype.connect = function(callback, forceDisconnect) {
 				self._ftpConn.removeListener('error', onError);
 			}
 
+			self._currentHost = self.config.hosts[reconnectAttempts % self.config.hosts.length]
+			
+			self._setStatus('connecting');
+
 			var ftpConnConfig = {
-				host: self.config.hosts[reconnectAttempts % self.config.hosts.length], // cycle through server
+				host: self._currentHost, // cycle through server
 				user: self.config.user,
 				password: self.config.password
 			};
@@ -255,7 +258,7 @@ InewsClient.prototype.queueLength = function() {
 InewsClient.prototype._setStatus = function(status) {
 	if(this.status !== status) {
 		this.status = status;
-		this.emit('status', this.status);
+		this.emit('status', { name: this.status, host: this._currentHost });
 	}
 };
 
