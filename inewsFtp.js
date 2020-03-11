@@ -22,6 +22,7 @@ function InewsClient(config) {
 	self._connectionCallbacks = [];
 	self._connectionInProgress = false;
 	self._currentHost = null;
+	self._reconnectAttempts = 0;
 
 	self._ftpConn = new FtpClient();
 
@@ -95,12 +96,12 @@ InewsClient.prototype.connect = function(callback, forceDisconnect) {
 				self._ftpConn.removeListener('error', onError);
 			}
 
-			self._currentHost = self.config.hosts[reconnectAttempts % self.config.hosts.length]
+			self._currentHost = self.config.hosts[self._reconnectAttempts++ % self.config.hosts.length] // cycle through servers
 			
 			self._setStatus('connecting');
 
 			var ftpConnConfig = {
-				host: self._currentHost, // cycle through server
+				host: self._currentHost,
 				user: self.config.user,
 				password: self.config.password
 			};
