@@ -91,9 +91,18 @@ InewsClient.prototype.connect = function(callback, forceDisconnect) {
 				}
 			}
 
+			function onEnd(error) {
+				if(!returned) {
+					returned = true;
+					removeListeners();
+					connectResult(null, self._ftpConn);
+				}
+			}
+
 			function removeListeners() {
 				self._ftpConn.removeListener('ready', onReady);
 				self._ftpConn.removeListener('error', onError);
+				self._ftpConn.removeListener('end', onEnd);
 			}
 
 			self._currentHost = self.config.hosts[self._reconnectAttempts++ % self.config.hosts.length] // cycle through servers
@@ -108,6 +117,7 @@ InewsClient.prototype.connect = function(callback, forceDisconnect) {
 
 			self._ftpConn.once('ready', onReady);
 			self._ftpConn.once('error', onError);
+			self._ftpConn.once('end', onEnd); // workaround in case error is not emitted on timeout 
 			self._ftpConn.connect(ftpConnConfig);
 		}
 
