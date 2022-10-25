@@ -70,9 +70,12 @@ module.exports = function(nsml, callback) {
 
 		nodes.forEach(function(node, index) {
 			if(node.type === 'tag') {
-				if(node.name === tag)
+				if (!node.children) {
+					return;
+				}
+				if(node.name === tag) {
 					lines.push(unescape(stringifyNodes(node.children)));
-//				else
+				}
 				lines = lines.concat(nodesToArray(node.children, tag));
 			}
 		});
